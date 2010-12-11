@@ -7,7 +7,7 @@
  * @copyright	(c) 2010 Chris Boulton
  * @license		http://www.opensource.org/licenses/mit-license.php
  */
-define('CWD', dirname(__FILE__));
+define('CWD', __DIR__);
 define('RESQUE_LIB', CWD . '/../../../lib/');
 
 define('TEST_MISC', realpath(CWD . '/../../misc/'));

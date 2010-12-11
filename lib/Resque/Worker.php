@@ -1,7 +1,7 @@
 <?php
-require_once dirname(__FILE__) . '/Stat.php';
-require_once dirname(__FILE__) . '/Job.php';
-require_once dirname(__FILE__) . '/Job/DirtyExitException.php';
+require_once __DIR__ . '/Stat.php';
+require_once __DIR__ . '/Job.php';
+require_once __DIR__ . '/Job/DirtyExitException.php';
 
 /**
  * Resque worker that handles checking queues for jobs, fetching them

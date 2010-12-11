@@ -1,5 +1,5 @@
 <?php
-require_once dirname(__FILE__) . '/Failure/Interface.php';
+require_once __DIR__ . '/Failure/Interface.php';
 
 /**
  * Failed Resque job.
@@ -38,7 +38,7 @@ class Resque_Failure
 	public static function getBackend()
 	{
 		if(self::$backend === null) {
-			require  dirname(__FILE__) . '/Failure/Redis.php';
+			require  __DIR__ . '/Failure/Redis.php';
 			self::$backend = 'Resque_Failure_Redis';
 		}
 
