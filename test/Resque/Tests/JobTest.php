@@ -1,5 +1,9 @@
 <?php
 namespace Resque\Tests;
+use Resque\Worker,
+    Resque\Resque,
+    Resque\Job,
+    Resque\Stat;
 
 require_once __DIR__ . '/bootstrap.php';
 
@@ -20,25 +24,25 @@ class JobTest extends TestCase
 		parent::setUp();
 
 		// Register a worker to test with
-		$this->worker = new \Resque\Worker('jobs');
+		$this->worker = new Worker('jobs');
 		$this->worker->registerWorker();
 	}
 
 	public function testJobCanBeQueued()
 	{
-		$this->assertTrue((bool)\Resque\Resque::enqueue('jobs', 'Test_Job'));
+		$this->assertTrue((bool) Resque::enqueue('jobs', '\Resque\Tests\TestJob'));
 	}
 
 	public function testQeueuedJobCanBeReserved()
 	{
-		\Resque\Resque::enqueue('jobs', 'Test_Job');
+		Resque::enqueue('jobs', '\Resque\Tests\TestJob');
 
-		$job = \Resque\Job::reserve('jobs');
+		$job = Job::reserve('jobs');
 		if($job == false) {
 			$this->fail('Job could not be reserved.');
 		}
 		$this->assertEquals('jobs', $job->queue);
-		$this->assertEquals('Test_Job', $job->payload['class']);
+		$this->assertEquals('\Resque\Tests\TestJob', $job->payload['class']);
 	}
 
 	/**
@@ -48,7 +52,7 @@ class JobTest extends TestCase
 	{
 		$args = new \stdClass;
 		$args->test = 'somevalue';
-		\Resque\Resque::enqueue('jobs', 'Test_Job', $args);
+		Resque::enqueue('jobs', '\Resque\Tests\TestJob', $args);
 	}
 
 	public function testQueuedJobReturnsExactSamePassedInArguments()
@@ -64,17 +68,17 @@ class JobTest extends TestCase
 				'key2' => 'value2'
 			),
 		);
-		\Resque\Resque::enqueue('jobs', 'Test_Job', $args);
-		$job = \Resque\Job::reserve('jobs');
+		Resque::enqueue('jobs', '\Resque\Tests\TestJob', $args);
+		$job = Job::reserve('jobs');
 
 		$this->assertEquals($args, $job->payload['args']);
 	}
 
 	public function testAfterJobIsReservedItIsRemoved()
 	{
-		\Resque\Resque::enqueue('jobs', 'Test_Job');
-		\Resque\Job::reserve('jobs');
-		$this->assertFalse(\Resque\Job::reserve('jobs'));
+		Resque::enqueue('jobs', '\Resque\Tests\TestJob');
+		Job::reserve('jobs');
+		$this->assertFalse(Job::reserve('jobs'));
 	}
 
 	public function testRecreatedJobMatchesExistingJob()
@@ -91,13 +95,13 @@ class JobTest extends TestCase
 			),
 		);
 
-		\Resque\Resque::enqueue('jobs', 'Test_Job', $args);
-		$job = \Resque\Job::reserve('jobs');
+		Resque::enqueue('jobs', '\Resque\Tests\TestJob', $args);
+		$job = Job::reserve('jobs');
 
 		// Now recreate it
 		$job->recreate();
 
-		$newJob = \Resque\Job::reserve('jobs');
+		$newJob = Job::reserve('jobs');
 		$this->assertEquals($job->payload['class'], $newJob->payload['class']);
 		$this->assertEquals($job->payload['args'], $newJob->payload['args']);
 	}
@@ -108,13 +112,13 @@ class JobTest extends TestCase
 			'class' => '\Resque\Tests\FailingJob',
 			'args' => null
 		);
-		$job = new \Resque\Job('jobs', $payload);
+		$job = new Job('jobs', $payload);
 		$job->worker = $this->worker;
 
 		$this->worker->perform($job);
 
-		$this->assertEquals(1, \Resque\Stat::get('failed'));
-		$this->assertEquals(1, \Resque\Stat::get('failed:'.$this->worker));
+		$this->assertEquals(1, Stat::get('failed'));
+		$this->assertEquals(1, Stat::get('failed:'.$this->worker));
 	}
 
 	/**
@@ -122,7 +126,7 @@ class JobTest extends TestCase
 	 */
 	public function testJobWithoutPerformMethodThrowsException()
 	{
-		\Resque\Resque::enqueue('jobs', '\Resque\Tests\TestJobWithoutPerformMethod');
+		Resque::enqueue('jobs', '\Resque\Tests\TestJobWithoutPerformMethod');
 		$job = $this->worker->reserve();
 		$job->worker = $this->worker;
 		$job->perform();
@@ -133,12 +137,12 @@ class JobTest extends TestCase
 	 */
 	public function testInvalidJobThrowsException()
 	{
-		\Resque\Resque::enqueue('jobs', 'InvalidJob');
+		Resque::enqueue('jobs', 'InvalidJob');
 		$job = $this->worker->reserve();
 		$job->worker = $this->worker;
 		$job->perform();
 	}
-	
+
 	public function testJobWithSetUpCallbackFiresSetUp()
 	{
 		$payload = array(
@@ -148,12 +152,12 @@ class JobTest extends TestCase
 				'somevar2',
 			),
 		);
-		$job = new \Resque\Job('jobs', $payload);
+		$job = new Job('jobs', $payload);
 		$job->perform();
-		
+
 		$this->assertTrue(TestJobWithSetUp::$called);
 	}
-	
+
 	public function testJobWithTearDownCallbackFiresSetUp()
 	{
 		$payload = array(
@@ -163,9 +167,9 @@ class JobTest extends TestCase
 				'somevar2',
 			),
 		);
-		$job = new \Resque\Job('jobs', $payload);
+		$job = new Job('jobs', $payload);
 		$job->perform();
-		
+
 		$this->assertTrue(TestJobWithTearDown::$called);
 	}
 }
