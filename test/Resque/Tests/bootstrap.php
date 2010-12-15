@@ -52,7 +52,9 @@ if(!preg_match('#^\s*port\s+([0-9]+)#m', $config, $matches)) {
 // Shutdown
 function killRedis($pid)
 {
-    if (getmypid() !== $pid) return;
+    if (getmypid() !== $pid) {
+        return; // don't kill from a forked worker
+    }
 	$config = file_get_contents(REDIS_CONF);
 	if(!preg_match('#^\s*pidfile\s+([^\s]+)#m', $config, $matches)) {
 		return;
