@@ -1,4 +1,7 @@
 <?php
+
+namespace Resque\Job;
+
 /**
  * Status tracker/information for a job.
  *
@@ -7,7 +10,7 @@
  * @copyright	(c) 2010 Chris Boulton
  * @license		http://www.opensource.org/licenses/mit-license.php
  */
-class Resque_Job_Status
+class Status
 {
 	const STATUS_WAITING = 1;
 	const STATUS_RUNNING = 2;
@@ -56,7 +59,7 @@ class Resque_Job_Status
 			'updated' => time(),
 			'started' => time(),
 		);
-		Resque::redis()->set('job:' . $id . ':status', json_encode($statusPacket));
+		\Resque\Resque::redis()->set('job:' . $id . ':status', json_encode($statusPacket));
 	}
 
 	/**
@@ -71,7 +74,7 @@ class Resque_Job_Status
 			return false;
 		}
 
-		if(!Resque::redis()->exists((string)$this)) {
+		if(!\Resque\Resque::redis()->exists((string)$this)) {
 			$this->isTracking = false;
 			return false;
 		}
@@ -83,7 +86,7 @@ class Resque_Job_Status
 	/**
 	 * Update the status indicator for the current job with a new status.
 	 *
-	 * @param int The status of the job (see constants in Resque_Job_Status)
+	 * @param int The status of the job (see constants in \Resque\Job\Status)
 	 */
 	public function update($status)
 	{
@@ -95,11 +98,11 @@ class Resque_Job_Status
 			'status' => $status,
 			'updated' => time(),
 		);
-		Resque::redis()->set((string)$this, json_encode($statusPacket));
+		\Resque\Resque::redis()->set((string)$this, json_encode($statusPacket));
 
 		// Expire the status for completed jobs after 24 hours
 		if(in_array($status, self::$completeStatuses)) {
-			Resque::redis()->expire((string)$this, 86400);
+			\Resque\Resque::redis()->expire((string)$this, 86400);
 		}
 	}
 
@@ -107,7 +110,7 @@ class Resque_Job_Status
 	 * Fetch the status for the job being monitored.
 	 *
 	 * @return mixed False if the status is not being monitored, otherwise the status as
-	 * 	as an integer, based on the Resque_Job_Status constants.
+	 * 	as an integer, based on the \Resque\Job\Status constants.
 	 */
 	public function get()
 	{
@@ -115,7 +118,7 @@ class Resque_Job_Status
 			return false;
 		}
 
-		$statusPacket = json_decode(Resque::redis()->get((string)$this), true);
+		$statusPacket = json_decode(\Resque\Resque::redis()->get((string)$this), true);
 		if(!$statusPacket) {
 			return false;
 		}
@@ -128,7 +131,7 @@ class Resque_Job_Status
 	 */
 	public function stop()
 	{
-		Resque::redis()->del((string)$this);
+		\Resque\Resque::redis()->del((string)$this);
 	}
 
 	/**

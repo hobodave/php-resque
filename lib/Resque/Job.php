@@ -1,4 +1,7 @@
 <?php
+
+namespace Resque;
+
 require_once __DIR__ . '/Job/Status.php';
 
 /**
@@ -9,7 +12,7 @@ require_once __DIR__ . '/Job/Status.php';
  * @copyright	(c) 2010 Chris Boulton
  * @license		http://www.opensource.org/licenses/mit-license.php
  */
-class Resque_Job
+class Job
 {
 	/**
 	 * @var string The name of the queue that this job belongs to.
@@ -49,19 +52,19 @@ class Resque_Job
 	public static function create($queue, $class, $args = null, $monitor = false)
 	{
 		if($args !== null && !is_array($args)) {
-			throw new InvalidArgumentException(
+			throw new \InvalidArgumentException(
 				'Supplied $args must be an array.'
 			);
 		}
 		$id = md5(uniqid('', true));
-		Resque::push($queue, array(
+		\Resque\Resque::push($queue, array(
 			'class'	=> $class,
 			'args'	=> $args,
 			'id'	=> $id,
 		));
 
 		if($monitor) {
-			Resque_Job_Status::create($id);
+			Job\Status::create($id);
 		}
 
 		return $id;
@@ -69,25 +72,25 @@ class Resque_Job
 
 	/**
 	 * Find the next available job from the specified queue and return an
-	 * instance of Resque_Job for it.
+	 * instance of \Resque\Job for it.
 	 *
 	 * @param string $queue The name of the queue to check for a job in.
-	 * @return null|object Null when there aren't any waiting jobs, instance of Resque_Job when a job was found.
+	 * @return null|object Null when there aren't any waiting jobs, instance of \Resque\Job when a job was found.
 	 */
 	public static function reserve($queue)
 	{
-		$payload = Resque::pop($queue);
+		$payload = \Resque\Resque::pop($queue);
 		if(!$payload) {
 			return false;
 		}
 
-		return new Resque_Job($queue, $payload);
+		return new \Resque\Job($queue, $payload);
 	}
 
 	/**
 	 * Update the status of the current job.
 	 *
-	 * @param int $status Status constant from Resque_Job_Status indicating the current status of a job.
+	 * @param int $status Status constant from \Resque\Job\Status indicating the current status of a job.
 	 */
 	public function updateStatus($status)
 	{
@@ -95,18 +98,18 @@ class Resque_Job
 			return;
 		}
 
-		$statusInstance = new Resque_Job_Status($this->payload['id']);
+		$statusInstance = new \Resque\Job\Status($this->payload['id']);
 		$statusInstance->update($status);
 	}
 
 	/**
 	 * Return the status of the current job.
 	 *
-	 * @return int The status of the job as one of the Resque_Job_Status constants.
+	 * @return int The status of the job as one of the \Resque\Job\Status constants.
 	 */
 	public function getStatus()
 	{
-		$status = new Resque_Job_Status($this->payload['id']);
+		$status = new \Resque\Job\Status($this->payload['id']);
 		return $status->get();
 	}
 
@@ -119,13 +122,13 @@ class Resque_Job
 	public function perform()
 	{
 		if(!class_exists($this->payload['class'])) {
-			throw new Resque_Exception(
+			throw new \Resque\Exception(
 				'Could not find job class ' . $this->payload['class'] . '.'
 			);
 		}
 
 		if(!method_exists($this->payload['class'], 'perform')) {
-			throw new Resque_Exception(
+			throw new \Resque\Exception(
 				'Job class ' . $this->payload['class'] . ' does not contain a perform method.'
 			);
 		}
@@ -149,16 +152,16 @@ class Resque_Job
 	 */
 	public function fail($exception)
 	{
-		$this->updateStatus(Resque_Job_Status::STATUS_FAILED);
+		$this->updateStatus(\Resque\Job\Status::STATUS_FAILED);
 		require_once __DIR__ . '/Failure.php';
-		Resque_Failure::create(
+		Failure::create(
 			$this->payload,
 			$exception,
 			$this->worker,
 			$this->queue
 		);
-		Resque_Stat::incr('failed');
-		Resque_Stat::incr('failed:' . $this->worker);
+		Stat::incr('failed');
+		Stat::incr('failed:' . $this->worker);
 	}
 
 	/**
@@ -166,7 +169,7 @@ class Resque_Job
 	 */
 	public function recreate()
 	{
-		$status = new Resque_Job_Status($this->payload['id']);
+		$status = new \Resque\Job\Status($this->payload['id']);
 		$monitor = false;
 		if($status->isTracking()) {
 			$monitor = true;

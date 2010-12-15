@@ -110,16 +110,16 @@ returned:
 
 To fetch the status of a job:
 
-	$status = new Resque_Job_Status($token);
+	$status = new \Resque\Job\Status($token);
 	echo $status->get(); // Outputs the status
 
-Job statuses are defined as constants in the `Resque_Job_Status` class.
+Job statuses are defined as constants in the `\Resque\Job\Status` class.
 Valid statuses include:
 
-* `Resque_Job_Status::STATUS_WAITING` - Job is still queued
-* `Resque_Job_Status::STATUS_RUNNING` - Job is currently running
-* `Resque_Job_Status::STATUS_FAILED` - Job has failed
-* `Resque_Job_Status::STATUS_COMPLETE` - Job is complete
+* `\Resque\Job\Status::STATUS_WAITING` - Job is still queued
+* `\Resque\Job\Status::STATUS_RUNNING` - Job is currently running
+* `\Resque\Job\Status::STATUS_FAILED` - Job has failed
+* `\Resque\Job\Status::STATUS_COMPLETE` - Job is complete
 * `false` - Failed to fetch the status - is the token valid?
 
 Statuses are available for up to 24 hours after a job has completed

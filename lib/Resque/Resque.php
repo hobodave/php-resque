@@ -1,6 +1,8 @@
 <?php
 
-require_once __DIR__ . '/Resque/Exception.php';
+namespace Resque;
+
+require_once __DIR__ . '/Exception.php';
 
 /**
  * Base Resque class.
@@ -29,13 +31,13 @@ class Resque
 	public static function setBackend($server)
 	{
 		if(is_array($server)) {
-			require_once __DIR__ . '/Resque/RedisCluster.php';
-			self::$redis = new Resque_RedisCluster($server);
+			require_once __DIR__ . '/RedisCluster.php';
+			self::$redis = new RedisCluster($server);
 		}
 		else {
 			list($host, $port) = explode(':', $server);
-			require_once __DIR__ . '/Resque/Redis.php';
-			self::$redis = new Resque_Redis($host, $port);
+			require_once __DIR__ . '/Redis.php';
+			self::$redis = new Redis($host, $port);
 		}
 	}
 
@@ -103,20 +105,20 @@ class Resque
 	 */
 	public static function enqueue($queue, $class, $args = null, $trackStatus = false)
 	{
-		require_once __DIR__ . '/Resque/Job.php';
-		return Resque_Job::create($queue, $class, $args, $trackStatus);
+		require_once __DIR__ . '/Job.php';
+		return Job::create($queue, $class, $args, $trackStatus);
 	}
 
 	/**
 	 * Reserve and return the next available job in the specified queue.
 	 *
 	 * @param string $queue Queue to fetch next available job from.
-	 * @return Resque_Job Instance of Resque_Job to be processed, false if none or error.
+	 * @return \Resque\Job Instance of \Resque\Job to be processed, false if none or error.
 	 */
 	public static function reserve($queue)
 	{
-		require_once __DIR__ . '/Resque/Job.php';
-		return Resque_Job::reserve($queue);
+		require_once __DIR__ . '/Job.php';
+		return \Resque\Job::reserve($queue);
 	}
 
 	/**

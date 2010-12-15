@@ -1,4 +1,7 @@
 <?php
+
+namespace Resque\Failure;
+
 /**
  * Redis backend for storing failed Resque jobs.
  *
@@ -8,7 +11,7 @@
  * @license		http://www.opensource.org/licenses/mit-license.php
  */
 
-class Resque_Failure_Redis implements Resque_Failure_Interface
+class Redis implements FailureInterface
 {
 	/**
 	 * Initialize a failed job class and save it (where appropriate).
@@ -20,7 +23,7 @@ class Resque_Failure_Redis implements Resque_Failure_Interface
 	 */
 	public function __construct($payload, $exception, $worker, $queue)
 	{
-		$data = new stdClass;
+		$data = new \stdClass;
 		$data->failed_at = strftime('%a %b %d %H:%M:%S %Z %Y');
 		$data->payload = $payload;
 		$data->exception = get_class($exception);
@@ -29,7 +32,7 @@ class Resque_Failure_Redis implements Resque_Failure_Interface
 		$data->worker = (string)$worker;
 		$data->queue = $queue;
 		$data = json_encode($data);
-		Resque::redis()->rpush('failed', $data);
+		\Resque\Resque::redis()->rpush('failed', $data);
 	}
 }
 ?>

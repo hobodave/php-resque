@@ -1,4 +1,7 @@
 <?php
+
+namespace Resque\Tests;
+
 /**
  * Resque test bootstrap file - sets up a test environment.
  *
@@ -19,7 +22,7 @@ define('REDIS_CONF', TEST_MISC . '/redis.conf');
 require_once CWD . '/TestCase.php';
 
 // Include Resque
-require_once RESQUE_LIB . 'Resque.php';
+require_once RESQUE_LIB . 'Resque/Resque.php';
 require_once RESQUE_LIB . 'Resque/Worker.php';
 
 // Attempt to start our own redis instance for tesitng.
@@ -44,7 +47,7 @@ if(!preg_match('#^\s*port\s+([0-9]+)#m', $config, $matches)) {
 	exit(1);
 }
 
-Resque::setBackend('localhost:' . $matches[1]);
+\Resque\Resque::setBackend('localhost:' . $matches[1]);
 
 // Shutdown
 function killRedis($pid)
@@ -87,11 +90,11 @@ if(function_exists('pcntl_signal')) {
 	{
 	 	exit;
 	}
-	pcntl_signal(SIGINT, 'sigint');
-	pcntl_signal(SIGTERM, 'sigint');
+	pcntl_signal(SIGINT, '\Resque\Tests\sigint');
+	pcntl_signal(SIGTERM, '\Resque\Tests\sigint');
 }
 
-class Test_Job
+class TestJob
 {
 	public function perform()
 	{
@@ -99,25 +102,25 @@ class Test_Job
 	}
 }
 
-class Failing_Job_Exception extends Exception
+class FailingJobException extends \Exception
 {
 
 }
 
-class Failing_Job
+class FailingJob
 {
 	public function perform()
 	{
-		throw new Failing_Job_Exception('Message!');
+		throw new FailingJobException('Message!');
 	}
 }
 
-class Test_Job_Without_Perform_Method
+class TestJobWithoutPerformMethod
 {
 
 }
 
-class Test_Job_With_SetUp
+class TestJobWithSetUp
 {
 	public static $called = false;
 	public $args = false;
@@ -134,7 +137,7 @@ class Test_Job_With_SetUp
 }
 
 
-class Test_Job_With_TearDown
+class TestJobWithTearDown
 {
 	public static $called = false;
 	public $args = false;

@@ -1,4 +1,7 @@
 <?php
+
+namespace Resque;
+
 // Third- party apps may have already loaded Resident from elsewhere
 // so lets be careful.
 if(!class_exists('Redisent')) {
@@ -14,7 +17,7 @@ if(!class_exists('Redisent')) {
  * @copyright	(c) 2010 Chris Boulton
  * @license		http://www.opensource.org/licenses/mit-license.php
  */
-class Resque_Redis extends Redisent
+class Redis extends \Redisent
 {
 	/**
 	 * @var array List of all commands in Redis that supply a key as their
