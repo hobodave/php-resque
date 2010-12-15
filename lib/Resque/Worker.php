@@ -179,7 +179,6 @@ class Worker
 
 			// Forked and we're the child. Run the job.
 			if($this->child === 0 || $this->child === false) {
-			    xdebug_break();
 				$status = 'Processing ' . $job->queue . ' since ' . strftime('%F %T');
 				$this->updateProcLine($status);
 				$this->log($status, self::LOG_VERBOSE);
