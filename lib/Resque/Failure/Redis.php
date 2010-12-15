@@ -1,6 +1,8 @@
 <?php
-
 namespace Resque\Failure;
+use Resque\Resque;
+
+require_once __DIR__ . '/AbstractFailure.php';
 
 /**
  * Redis backend for storing failed Resque jobs.
@@ -10,29 +12,48 @@ namespace Resque\Failure;
  * @copyright	(c) 2010 Chris Boulton
  * @license		http://www.opensource.org/licenses/mit-license.php
  */
-
-class Redis implements FailureInterface
+class Redis extends AbstractFailure
 {
-	/**
-	 * Initialize a failed job class and save it (where appropriate).
-	 *
-	 * @param object $payload Object containing details of the failed job.
-	 * @param object $exception Instance of the exception that was thrown by the failed job.
-	 * @param object $worker Instance of Resque_Worker that received the job.
-	 * @param string $queue The name of the queue the job was fetched from.
-	 */
-	public function __construct($payload, $exception, $worker, $queue)
-	{
-		$data = new \stdClass;
+    public function save()
+    {
+        $data = new \stdClass;
 		$data->failed_at = strftime('%a %b %d %H:%M:%S %Z %Y');
-		$data->payload = $payload;
-		$data->exception = get_class($exception);
-		$data->error = $exception->getMessage();
-		$data->backtrace = explode("\n", $exception->getTraceAsString());
-		$data->worker = (string)$worker;
-		$data->queue = $queue;
+		$data->payload = $this->payload;
+		$data->exception = get_class($this->exception);
+		$data->error = $this->exception->getMessage();
+		$data->backtrace = explode("\n", $this->exception->getTraceAsString());
+		$data->worker = (string) $this->worker;
+		$data->queue = $this->queue;
 		$data = json_encode($data);
-		\Resque\Resque::redis()->rpush('failed', $data);
-	}
+		Resque::redis()->rpush('failed', $data);
+    }
+
+    public static function count()
+    {
+        return (int) Resque::redis()->llen('failed');
+    }
+
+    public static function all($start = 0, $count = 1)
+    {
+        /*
+            TODO fix this
+        */
+        //return Resque::list_range('failed', $start, $count);
+    }
+
+    public static function clear()
+    {
+        return Resque::redis()->del('failed');
+    }
+
+    public static function requeue($index)
+    {
+        /*
+            TODO Finish requeue support
+        */
+        $item = static::all($index);
+        $item['retried_at'] = strftime('%a %b %d %H:%M:%S %Z %Y');
+        Resque::redis()->lset('failed', $index, json_encode($item));
+        // Job.create(item['queue'], item['payload']['class'], *item['payload']['args'])
+    }
 }
-?>

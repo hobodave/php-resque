@@ -1,6 +1,6 @@
 <?php
-
 namespace Resque;
+use Resque\Failure\Failure;
 
 require_once __DIR__ . '/Job/Status.php';
 
@@ -153,7 +153,7 @@ class Job
 	public function fail($exception)
 	{
 		$this->updateStatus(\Resque\Job\Status::STATUS_FAILED);
-		require_once __DIR__ . '/Failure.php';
+		require_once __DIR__ . '/Failure/Failure.php';
 		Failure::create(
 			$this->payload,
 			$exception,

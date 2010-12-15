@@ -1,8 +1,6 @@
 <?php
-
-namespace Resque;
-
-require_once __DIR__ . '/Failure/FailureInterface.php';
+namespace Resque\Failure;
+use Resque\Worker;
 
 /**
  * Failed Resque job.
@@ -17,7 +15,7 @@ class Failure
 	/**
 	 * @var string Class name representing the backend to pass failed jobs off to.
 	 */
-	private static $backend;
+	protected static $backend;
 
 	/**
 	 * Create a new failed job on the backend.
@@ -29,8 +27,9 @@ class Failure
 	 */
 	public static function create($payload, \Exception $exception, Worker $worker, $queue)
 	{
-		$backend = self::getBackend();
-		new $backend($payload, $exception, $worker, $queue);
+		$backend = static::getBackend();
+		$failure = new $backend($payload, $exception, $worker, $queue);
+		$failure->save();
 	}
 
 	/**
@@ -40,12 +39,12 @@ class Failure
 	 */
 	public static function getBackend()
 	{
-		if(self::$backend === null) {
-			require  __DIR__ . '/Failure/Redis.php';
-			self::$backend = '\Resque\Failure\Redis';
+		if(static::$backend === null) {
+			require_once  __DIR__ . '/Redis.php';
+			static::$backend = '\Resque\Failure\Redis';
 		}
 
-		return self::$backend;
+		return static::$backend;
 	}
 
 	/**
@@ -59,4 +58,60 @@ class Failure
 	{
 		self::$backend = $backend;
 	}
+	
+	/**
+	 * Count of failures seen
+	 *
+	 * @return int
+	 **/
+	public static function count()
+	{
+	    $backend = static::getBackend();
+	    return $backend::count();
+	}
+
+    /**
+     * Returns a paginated array of Failure objects
+     *
+     * @return array
+     */
+    public static function all($start = 0, $count = 1)
+    {
+	    $backend = static::getBackend();
+	    return $backend::all($start, $count);
+    }
+
+    /**
+     * An URL where Failures can be viewed
+     *
+     * @return string
+     **/
+    public static function url()
+    {
+        $backend = static::getBackend();
+	    return $backend::url();
+    }
+
+    /**
+     * Clear all failure jobs
+     *
+     * @return void
+     **/
+    public static function clear()
+    {
+        $backend = static::getBackend();
+	    return $backend::clear();
+    }
+
+    /**
+     * Requeue
+     *
+     * @param  int $index
+     * @return void
+     **/
+    public static function requeue($index)
+    {
+        $backend = static::getBackend();
+	    return $backend::requeue($index);
+    }
 }
