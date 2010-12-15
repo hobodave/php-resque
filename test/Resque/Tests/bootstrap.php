@@ -30,6 +30,7 @@ if($returnVar != 0) {
 }
 
 exec('cd ' . TEST_MISC . '; redis-server ' . REDIS_CONF, $output, $returnVar);
+usleep(500000);
 if($returnVar != 0) {
 	echo "Cannot start redis-server.\n";
 	exit(1);
@@ -46,8 +47,9 @@ if(!preg_match('#^\s*port\s+([0-9]+)#m', $config, $matches)) {
 Resque::setBackend('localhost:' . $matches[1]);
 
 // Shutdown
-function killRedis()
+function killRedis($pid)
 {
+    if (getmypid() !== $pid) return;
 	$config = file_get_contents(REDIS_CONF);
 	if(!preg_match('#^\s*pidfile\s+([^\s]+)#m', $config, $matches)) {
 		return;
@@ -55,7 +57,7 @@ function killRedis()
 
 	$pidFile = TEST_MISC . '/' . $matches[1];
 	$pid = trim(file_get_contents($pidFile));
-	posix_kill($pid, 9);
+	posix_kill((int) $pid, 9);
 
 	if(is_file($pidFile)) {
 		unlink($pidFile);
@@ -76,7 +78,7 @@ function killRedis()
 		unlink($filename);
 	}
 }
-register_shutdown_function('killRedis');
+register_shutdown_function('\Resque\Tests\killRedis', getmypid());
 
 if(function_exists('pcntl_signal')) {
 	// Override INT and TERM signals, so they do a clean shutdown and also
