@@ -480,8 +480,8 @@ class Resque_Worker
 	 */
 	public function registerWorker()
 	{
-		Resque::redis()->sadd('workers', $this);
-		Resque::redis()->set('worker:' . (string)$this . ':started', strftime('%a %b %d %H:%M:%S %Z %Y'));
+		Resque::redis()->sadd('workers', (string) $this);
+		Resque::redis()->set('worker:' . (string) $this . ':started', strftime('%a %b %d %H:%M:%S %Z %Y'));
 	}
 
 	/**
@@ -493,7 +493,7 @@ class Resque_Worker
 			$this->currentJob->fail(new Resque_Job_DirtyExitException);
 		}
 
-		$id = (string)$this;
+		$id = (string) $this;
 		Resque::redis()->srem('workers', $id);
 		Resque::redis()->del('worker:' . $id);
 		Resque::redis()->del('worker:' . $id . ':started');
