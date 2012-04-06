@@ -30,6 +30,12 @@ class Resque
 	 */
 	protected static $redisDatabase = 0;
 
+    /**
+     * Classname of RedisAdapter to use
+     * @var string
+     */
+    protected static $redisAdapter = 'Resque_RedisAdapter_RedisentAdapter';
+
 	/**
 	 * @var int PID of current process. Used to detect changes when forking
 	 *  and implement "thread" safety to avoid race conditions.
@@ -50,6 +56,11 @@ class Resque
 		self::$redisDatabase = $database;
 		self::$redis         = null;
 	}
+
+    public static function setAdapter($adapter)
+    {
+        self::$redisAdapter = $adapter;
+    }
 
 	/**
 	 * Return an instance of the Resque_Redis class instantiated for Resque.
@@ -75,23 +86,20 @@ class Resque
 			$server = 'localhost:6379';
 		}
 
-		if(is_array($server)) {
-			require_once dirname(__FILE__) . '/Resque/RedisCluster.php';
-			self::$redis = new Resque_RedisCluster($server);
-		}
-		else {
-			if (strpos($server, 'unix:') === false) {
-				list($host, $port) = explode(':', $server);
-			}
-			else {
-				$host = $server;
-				$port = null;
-			}
-			require_once dirname(__FILE__) . '/Resque/Redis.php';
-			self::$redis = new Resque_Redis($host, $port);
-		}
+        if (is_string($server)) {
+            if (strpos($server, 'unix:') === false) {
+                list($host, $port) = explode(':', $server);
+            } else {
+                $host = $server;
+                $port = null;
+            }
+        }
 
+        $options = is_array($server) ? $server : array('host' => $host, 'port' => $port);
+
+        self::$redis = new self::$redisAdapter($options);
 		self::$redis->select(self::$redisDatabase);
+
 		return self::$redis;
 	}
 

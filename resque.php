@@ -12,6 +12,11 @@ if(!empty($REDIS_BACKEND)) {
 	Resque::setBackend($REDIS_BACKEND);
 }
 
+$REDIS_ADAPTER = getenv('REDIS_ADAPTER');
+if (!empty($REDIS_ADAPTER)) {
+    Resque::setAdapter($REDIS_ADAPTER);
+}
+
 $logLevel = 0;
 $LOGGING = getenv('LOGGING');
 $VERBOSE = getenv('VERBOSE');
@@ -66,7 +71,7 @@ else {
 	$queues = explode(',', $QUEUE);
 	$worker = new Resque_Worker($queues);
 	$worker->logLevel = $logLevel;
-	
+
 	$PIDFILE = getenv('PIDFILE');
 	if ($PIDFILE) {
 		file_put_contents($PIDFILE, getmypid()) or

@@ -39,7 +39,7 @@ class Resque_RedisCluster extends RedisentCluster
 		'setnx',
 		'incr',
 		'incrby',
-		'decrby',
+		'decr',
 		'decrby',
 		'rpush',
 		'lpush',
@@ -81,7 +81,7 @@ class Resque_RedisCluster extends RedisentCluster
 	// msetnx
 	// mset
 	// renamenx
-	
+
 	/**
 	 * Set Redis namespace (prefix) default: resque
 	 * @param string $namespace
