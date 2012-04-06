@@ -28,6 +28,6 @@ class Resque_RedisAdapter_PhpRedisAdapter extends Resque_RedisAdapter_AbstractRe
 
     public function __call($name, $args)
     {
-        return $this->backend->$name($args);
+        return call_user_func_array(array($this->backend, $name), $args);
     }
 }
