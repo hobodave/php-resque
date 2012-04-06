@@ -25,4 +25,9 @@ class Resque_RedisAdapter_PhpRedisAdapter extends Resque_RedisAdapter_AbstractRe
         parent::prefix($namespace);
         $this->backend->setOption(Redis::OPT_PREFIX, $this->defaultNamespace);
     }
+
+    public function __call($name, $args)
+    {
+        return $this->backend->$name($args);
+    }
 }

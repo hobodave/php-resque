@@ -91,10 +91,10 @@ abstract class Resque_RedisAdapter_AbstractRedisAdapter implements Resque_RedisA
     public function __call($name, $args)
     {
         if(in_array($name, $this->keyCommands)) {
-            $args[1][0] = $this->defaultNamespace . $args[1][0];
+            $args[0] = $this->defaultNamespace . $args[0];
         }
 
-        return $this->backend->$name($args[1]);
+        return $this->backend->$name($args);
     }
 
     abstract protected function initBackend(array $options = array());
