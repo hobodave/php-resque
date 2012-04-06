@@ -34,7 +34,7 @@ class Resque
      * Classname of RedisAdapter to use
      * @var string
      */
-    protected static $redisAdapter = 'Resque_RedisAdapter_RedisentAdapter';
+    protected static $redisAdapter = 'RedisentAdapter';
 
 	/**
 	 * @var int PID of current process. Used to detect changes when forking
@@ -96,6 +96,15 @@ class Resque
         }
 
         $options = is_array($server) ? $server : array('host' => $host, 'port' => $port);
+
+        /**
+         * Icky, but Resque doesn't provide its own autoloader
+         */
+        $include = dirname(__FILE__) . '/Resque/RedisAdapter/' . self::$redisAdapter . '.php';
+
+        if (file_exists($include)) {
+            require_once $include;
+        }
 
         self::$redis = new self::$redisAdapter($options);
 		self::$redis->select(self::$redisDatabase);
