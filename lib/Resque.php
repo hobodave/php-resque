@@ -106,7 +106,7 @@ class Resque
             require_once $include;
         }
 
-        $adapter = 'Resque_RedisAdapter_' . self::$redisAdapter
+        $adapter = 'Resque_RedisAdapter_' . self::$redisAdapter;
         self::$redis = new $adapter($options);
 		self::$redis->select(self::$redisDatabase);
 
