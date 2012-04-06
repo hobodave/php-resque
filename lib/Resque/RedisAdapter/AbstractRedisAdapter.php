@@ -1,5 +1,7 @@
 <?php
 
+require_once dirname(__FILE__) . '/RedisAdapterInterface.php';
+
 abstract class Resque_RedisAdapter_AbstractRedisAdapter implements Resque_RedisAdapter_RedisAdapterInterface
 {
     /**

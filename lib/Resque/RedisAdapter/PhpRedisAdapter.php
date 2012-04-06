@@ -1,5 +1,7 @@
 <?php
 
+require_once dirname(__FILE__) . '/AbstractRedisAdapter.php';
+
 class Resque_RedisAdapter_PhpRedisAdapter extends Resque_RedisAdapter_AbstractRedisAdapter
 {
     protected $defaultOptions = array(
