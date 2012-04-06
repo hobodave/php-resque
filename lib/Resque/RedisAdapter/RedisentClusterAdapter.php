@@ -1,7 +1,7 @@
 <?php
 
 if(!class_exists('RedisentCluster', false)) {
-	require_once dirname(__FILE__) . '/../Redisent/RedisentCluster.php';
+	require_once dirname(__FILE__) . '/../../Redisent/RedisentCluster.php';
 }
 
 class Resque_RedisAdapter_RedisentClusterAdapter extends Resque_RedisAdapter_AbstractRedisAdapter
